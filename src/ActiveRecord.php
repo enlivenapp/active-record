@@ -496,7 +496,8 @@ abstract class ActiveRecord extends Base implements JsonSerializable
                 continue;
             }
 
-            if ($prop->isInitialized($this) && !array_key_exists($name, $this->data)) {
+            // Overwrite so findAll() rows after the first don't inherit the prior row's data.
+            if ($prop->isInitialized($this)) {
                 $this->data[$name] = $this->{$name};
             }
         }

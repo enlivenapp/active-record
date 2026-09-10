@@ -126,6 +126,26 @@ class TypedPropertyTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($users[1]->isHydrated());
     }
 
+    public function testFindAllRowsDoNotInheritPriorRowData(): void
+    {
+        $this->pdo->exec("INSERT INTO user (name, password) VALUES ('alice', 'hash1')");
+        $this->pdo->exec("INSERT INTO user (name, password) VALUES ('bob', 'hash2')");
+
+        $users = (new TypedUser($this->pdo))->findAll();
+
+        $this->assertSame('bob', $users[1]->name, 'typed property should hold row 2 value');
+        $this->assertSame(
+            'bob',
+            $users[1]->getData()['name'] ?? null,
+            'getData() should hold row 2 value, not the prior row\'s'
+        );
+        $this->assertSame(
+            'hash2',
+            $users[1]->getData()['password'] ?? null,
+            'getData() should hold row 2 value, not the prior row\'s'
+        );
+    }
+
     public function testSyncDirtySkipsPropertiesAlreadyInDirty(): void
     {
         $user = new TypedUser($this->pdo);
